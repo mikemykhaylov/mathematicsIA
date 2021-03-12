@@ -1,0 +1,229 @@
+\documentclass[stu, 11pt, a4paper, floatsintext]{apa7}
+
+\usepackage[american]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage[style=apa,backend=biber]{biblatex}
+\usepackage{csquotes}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{cleveref}
+
+\graphicspath{{src/images/}}
+
+\addbibresource{src/bibliography.bib}
+
+\title{Exploration of the Telephone Numbers by introducing conference calls}
+\author{Michael V. Mykhaylov}
+\authorsaffiliations{{Kolegium Europejskie}}
+\course{IB: Mathematics: Applications and Interpretations HL}	
+\professor{Marlena Nowaczyk}
+\duedate{\today}
+
+\begin{document}
+	\maketitle
+	When asked about the area of my exploration, I was determined to investigate something to do with telecommunication networks. They fascinate me from the engineering perspective, as it takes a tremendous amount of effort and ingenuity to make communications around the globe quick and painless. I am also interested in combinatorics and graph theory, which land nicely on the huge graph that the cellular network is, a system revolving around concurrent connections. Thus, combining these topics made me come across the concept of Telephone Numbers. It is a sequence of integers indicating, that if you had  subscribers in a telephone network, the nth term of the sequence would be the number of ways those subscribers could call each other, including multiple calls in parallel. This sequence is well studied, so there exist many formulas that define it, such as a recurrence relation and a generating function.
+	
+	What I will be looking into is, since their introduction in 1800 \Parencite{knuth_art_1998}, they have not been keeping up with the advances in the telecommunication industry, like the introduction of conference calls in 1956 \Parencite{nathalie_gosset_when_2017}, calls involving more than two people. So, I have decided to "modernise" the sequence into a new one (onward called Conference Numbers) and derive the updated recurrence relation and the generating function. The resulting sequence will account for conference calls, as well as traditional calls, or any combination of both. Then, I am going to write an algorithm that will calculate the first ten elements of the sequence so that I could check the validity of derived expressions.
+	\section{Background Information}
+	\subsection{Telephone Numbers}
+	Telephone Numbers can be defined in many ways, but the one of interest to me is the recurrence relation. It is as follows:
+	\begin{equation}
+		\label{eq01:tel_numbers_recurrence}
+		T(n)=T(n-1)+(n-1)T(n-2)
+	\end{equation}
+	\begin{center}
+		Where $T(n)$ is the nth telephone number
+	\end{center}
+	This formula also happens to have a beautiful graphical representation. If the phone customers are thought of as vertices of the graph and the calls between them as its edges, then, the total count of the possible connections in the graph with  vertices is the nth telephone number. \Cref{fig1:graph_connections} demonstrates all possible connections in an example graph consisting of 4 vertices.
+	
+	When considering the top vertex of the graph, all of the arrangements can be split up into two groups — the one where the vertex is not connected and where it is. By looking at two of these scenarios, one can derive the recurrence formula. For example, when the selected vertex is not connected, the remaining vertices can connect in the same number of ways as the graph one vertex smaller can. From this observation comes the first term, $T(n-1)$. As for the second case, when the vertex is connected to some other point, there are $n-1$ possibilities to choose the speaker. And for each of them, a graph two vertices less is left, i.e $T(n-2)$. Together, these expressions constitute \cref{eq01:tel_numbers_recurrence}.
+	\subsection{Generating functions method}
+	When solving a problem, an answer to which is a sequence, what form is the solution expected to be? In the best-case scenario, a formula of the nth term of the sequence is obtained. However, occasionally the formula might be overly complicated or even non-existent. In that case, a generating function might be an acceptable answer. The generating function is a method of encoding an infinite sequence by treating its terms as coefficients in formal power series expansion around 0. While seemingly strange at first sight, this method often provides an elegant expression of the sequence and allows to do almost anything possible with the sequence itself. There are numerous types of generating functions, but only the ordinary type will be considered in this exploration. \Cref{eq02:regular_generating_func_expr} demonstrates the general expression of ordinary generating functions.
+	\begin{equation}
+		\label{eq02:regular_generating_func_expr}
+		A(x)=\sum_{n\geq 0}a_nx^n
+	\end{equation}
+	\begin{center}
+		Where $a_n$ is the nth number of the sequence
+	\end{center}
+	\section{Research process}
+	\subsection{Deriving the recurrence relation for the Conference Numbers}
+	I have decided to take a similar approach to find the recurrence relation of Conference Numbers as with the Telephone Numbers. Now, conference calls allow for a plethora of concurrent speakers, but only three-way calls are considered in the investigation. Therefore, taking \cref{fig1:graph_connections} as a basis (since two-way calls are still possible) and extending it with three-way connections (represented by graph cycles) produces \cref{fig2:graph_connections_cycles}.
+	
+	Now, looking at the top vertex, three possibilities can be observed: not connected, connected to a point, or belongs in a cycle. First two have been already discussed in the derivation of \cref{eq01:tel_numbers_recurrence}. However, the third case has not been covered yet. In it, as the length of every possible cycle is 3, there should be two more speakers to form the cycle. They can be any of the remaining $n-1$ customers in the network, and the order of picking does not matter. In combinatorics, the needed expression is called combinations of $k$ elements from a set of $m$ elements and is equal to the binomial coefficient. After the cycle is established, a graph with three fewer vertices remains, and the number of possible combinations in it is equal to $C(n-3)$ ($C(n)$ is the nth conference number). In this case $m=n-1$ and $k=2$, so it comes out to \cref{eq03:recursion_cycle_term}.
+	\begin{equation}
+		\label{eq03:recursion_cycle_term}
+		\begin{split}
+			\binom{n-1}{2}C(n-3) & =\frac{(n-1)(n-2)}{2}C(n-3)=\frac{n^2-3n+2}{2}C(n-3) \\
+			& =(0.5n^2-1.5n+1)C(n-3)
+		\end{split}
+	\end{equation}
+	By putting \cref{eq01:tel_numbers_recurrence,eq03:recursion_cycle_term} together, \cref{eq04:conf_numbers_recurrence} is obtained, a recurrence relation formula for the conference numbers with a maximum of three concurrent speakers.
+	\begin{equation}
+		\label{eq04:conf_numbers_recurrence}
+		C(n)=C(n-1)+(n-1)C(n-2)+(0.5n^2-1.5n+1)C(n-3)
+	\end{equation}
+	From this relation, it is evident that the first three terms of the sequence are required. They can be obtained by utilising the graphical representation once again. \Cref{fig3:small_graph_connections_cycles} demonstrates all possible connections in graphs with 0, 1 and 2 vertices.
+	\subsection{Deriving the equation of the sequence using generating functions method}
+	For the convenience of further calculations, I will rewrite the \cref{eq04:conf_numbers_recurrence} and the initial conditions, \cref{eq05:conf_numbers_recurrence_conditions}.
+	\begin{equation}
+		\label{eq05:conf_numbers_recurrence_conditions}
+		a_n=a_{n-1}+(n-1)a_{n-2}+(0.5n^2-1.5n+1)a_{n-3};\;(n\geq3,\;a_0=1,\;a_1=1,\;a_2=2)
+	\end{equation}
+	The first step of retrieving the generating function is multiplying both sides by $x^n$ and summing over the domain of $n$. This action produces \cref{eq06:conf_numbers_recurrence_summing}.
+	\begin{equation}
+		\label{eq06:conf_numbers_recurrence_summing}
+		\sum_{n\geq 3} a_nx^n=\sum_{n\geq 3} a_{n-1}x^n+\sum_{n\geq 3} (n-1)a_{n-2}x^n+\sum_{n\geq 3} (0.5n^2-1.5n+1)a_{n-3}x^n
+	\end{equation}
+	\Cref{eq06:conf_numbers_recurrence_summing} should now be simplified and expressed in terms of $x$ and the generating function $A(x)$. To declutter the calculations, I have decided to simplify the summations individually. So, $L$ is the term on the left and $R_n$ is the nth term on the right. Now, on to the calculations.
+	\begin{align}
+		\begin{split}
+			\label{eq07:conf_numbers_recurrence_l}
+			L & =\sum_{n\geq 3}a_nx^n \\
+			& =\sum_{n\geq 0}a_nx^n-\left(a_0x^0+a_1x^1+a_2x^2\right) \\
+			& =A(x)-(1\cdot1+1\cdot x+2\cdot x^2) \\
+			& =A(x)-\left(1+x+2x^2\right)
+		\end{split}\\
+		\begin{split}
+			\label{eq08:conf_numbers_recurrence_r1}
+			R_1 & =\sum_{n\geq 3}a_{n-1}x^n \\
+			& =x\sum_{n\geq 3}a_{n-1}x^{n-1}=x\sum_{n\geq 2}a_nx^n \\
+			& =x\left(\sum_{n\geq 0}a_nx^n-\left(a_0x^0+a_1x^1\right)\right) \\
+			& =x\left(A(x)-(1+x)\right)
+		\end{split}\\
+		\begin{split}
+			\label{eq09:conf_numbers_recurrence_r2}
+			R_2 & =\sum_{n\geq 3}(n-1)a_{n-2}x^nt \\
+			& =\sum_{n\geq 3}a_{n-2}nx^n-\sum_{n\geq 3}a_{n-2}x^n= \\
+			& =\sum_{n\geq 3}a_{n-2}x\frac{d}{dx}\left(x^n\right)-x^2\sum_{n\geq 3}a_{n-2}x^{n-2} \\
+			& =x(\frac{d}{dx})\sum_{n\geq 3}a_{n-2}x^n-x^2\sum_{n\geq 3}a_{n-2}x^{n-2} \\
+			& =x(\frac{d}{dx})\left(x^2\sum_{n\geq 3}a_{n-2}x^{n-2}\right)-x^2\sum_{n\geq 3}a_{n-2}x^{n-2} \\
+			& =x(\frac{d}{dx})\left(x^2\left(\sum_{n\geq 0}a_nx^n-a_0x^0\right)\right)-\left(x^2\left(\sum_{n\geq 0}a_nx^n-a_0x^0\right)\right) \\
+			& =x(\frac{d}{dx})\left(x^2\left(A(x)-1\right)\right)-x^2\left(A(x)-1\right) \\
+			& =x\left(x^2A'(x)+2x\left(A(x)-1\right)\right)-x^2A(x)+x^2 \\
+			& =x^3A'(x)+2x^2\left(A(x)-1\right)-x^2A(x)+x^2 \\
+			& =x^3A'(x)+x^2A(x)-x^2
+		\end{split}
+	\end{align}
+	\begin{equation}
+		\begin{split}
+			\label{eq10:conf_numbers_recurrence_r3}t
+			R_3 & =\sum_{n\geq 3}\left(0.5n^2-1.5n+1\right)a_{n-3}x^n \\
+			& =\sum_{n\geq 3}0.5n^2a_{n-3}x^n-\sum_{n\geq 3}1.5na_{n-3}x^n+\sum_{n\geq 3}a_{n-3}x^n \\
+			& =0.5\sum_{n\geq3}a_{n-3}x\frac{d}{dx}\left(nx^n\right)-1.5\sum_{n\geq3}a_{n-3}x\frac{d}{dx}x^n+x^3\sum_{n\geq3}a_{n-3}x^{n-3} \\
+			& =0.5x(\frac{x}{dx})\left(\sum_{n\geq3}a_{n-3}nx^n\right)-1.5x(\frac{d}{dx})\left(\sum_{n\geq3}a_{n-3}x^n\right)+x^3\sum_{n\geq0}a_nx^n \\
+			& =0.5x(\frac{d}{dx})\left(\sum_{n\geq3}a_{n-3}x\frac{d}{dx}x^n\right)-1.5x(\frac{d}{dx})\left(x^3\sum_{n\geq0}a_nx^n\right)+x^3\sum_{n\geq0}a_nx^n \\
+			& =0.5x(\frac{d}{dx})\left(x(\frac{d}{dx})\left(\sum_{n\geq3}a_{n-3}x^n\right)\right)-1.5x(\frac{d}{dx})\left(x^3\sum_{n\geq0}a_nx^n\right)+x^3\sum_{n\geq0}a_nx^n \\
+			& =0.5x(\frac{d}{dx})\left(x(\frac{d}{dx})\left(x^3\sum_{n\geq0}a_nx^n\right)\right)-1.5x(\frac{d}{dx})\left(x^3\sum_{n\geq0}a_nx^n\right)+x^3\sum_{n\geq0}a_nx^n \\
+			& =0.5x(\frac{d}{dx})\left(x(\frac{d}{dx})\left(x^3A(x)\right)\right)-1.5x(\frac{d}{dx})\left(x^3A(x)\right)+x^3A(x) \\
+			& =0.5x(\frac{d}{dx})\left(x\left(3x^2A(x)+x^3A'(x)\right)\right)-1.5x\left(3x^2A(x)+x^3A'(x)\right)+x^3A(x) \\
+			& =0.5x(\frac{d}{dx})\left(3x^3A(x)+x^4A'(x)\right)-\left(4.5x^3A(x)+1.5x^4A'(x)\right)+x^3A(x) \\
+			& =0.5x\left((\frac{d}{dx})\left(3x^3A(x)\right)+(\frac{d}{dx})\left(x^4A'(x)\right)\right)-\left(4.5x^3A(x)+1.5x^4A'(x)\right)+x^3A(x) \\
+			& =0.5x\left(9x^2A(x)+3x^3A'(x)+4x^3A'(x)+x^4A''(x)\right)-\left(4.5x^3A(x)+1.5x^4A'(x)\right)+x^3A(x) \\
+			& =4.5x^3A(x)+1.5x^4A'(x)+2x^4A'(x)+0.5x^5A''(x)-4.5x^3A(x)-1.5x^4A'(x)+x^3A(x) \\
+			& =0.5xA''(x)+2x^4A'(x)+x^3A(x)
+		\end{split}
+	\end{equation}
+	At last, putting together \cref{eq07:conf_numbers_recurrence_l,eq08:conf_numbers_recurrence_r1,eq09:conf_numbers_recurrence_r2,eq10:conf_numbers_recurrence_r3}, grouping by the order of  derivative and factoring it out, I obtain \cref{eq11:conf_numbers_diff_eq}, a second-order non-homogenous ordinary differential equation.
+	\begin{multline*}
+		A(x)-1-x-2x^2=x\left(A(x)-1-x\right)+\left(x^3A'(x)+x^2A(x)-x^2\right)+ \\
+		\left(0.5xA''(x)+2x^4A'(x)+x^3A(x)\right)
+	\end{multline*}
+	\begin{multline*}
+		xA(x)-x-x^2+x^3A'(x)+x^2A(x)-x^2+0.5xA''(x)+2x^4A'(x)+x^3A(x) \\
+		-A(x)+1+x+x^2=0
+	\end{multline*}
+	\begin{equation}
+		\label{eq11:conf_numbers_diff_eq}
+		0.5x^5A''(x)+\left(2x^4+x^3\right)A'(x)+\left(x^3+x^2+x-1\right)A(x)=-1
+	\end{equation}
+	\subsection{Solving the differential equation for the generating function}
+	While it is desirable to get an analytical solution, even ordinary differential equations (ODEs) are notorious for often being unsolvable analytically. Fortunately, to proceed with the research, the exact formula for the function might not be required, as long as the value of the function and its derivatives at $x=0$ can be calculated. So, as it is often done with ODEs, instead of spending time to solve them, one shall proceed with the application of the sought function.
+	\subsubsection{Studying the point of interest}
+	First, I decided to study the point $x=0$ at the differential equation, mainly to check, if it is an irregular singular point of the DE. If so, an essential singularity exists at this point, and the equation can not be solved at it analytically. To check, I have first rewritten the retrieved DE in its standard form, see \cref{eq12:conf_numbers_diff_eq_std}.
+	\begin{equation}
+		\label{eq12:conf_numbers_diff_eq_std}
+		A''(x)+\frac{2x^4+x^3}{0.5x^5}A'(x)+\frac{x^3+x^2+x-1}{0.5x^5}A(x)=-\frac{1}{0.5x^5}
+	\end{equation}
+	Then, after substituting 0 for $x$, it can be seen that both coefficients at $A'(x)$ and $A(x)$ are undefined at $x=0$. Therefore, 0 is a singular point of this DE. Next, it should be determined whether it is a regular or an irregular singular point. I now proceed to simplify the equation and name the coefficients for coherency in further explanation, see \cref{eq13:conf_numbers_diff_eq_std_coeff}.
+	\begin{equation}
+	\label{eq13:conf_numbers_diff_eq_std_coeff}
+		A''(x)+p(x)A'(x)+q(x)A(x)=-\frac{2}{x^5};\;p(x)=\frac{4x+2}{x^2};\;q(x)=\frac{2x^3+2x^2+2x-2}{x^5}
+	\end{equation}
+	The regularity can be determined by looking at $p(x)$ and $q(x)$; if factor $(x-x_0)$ appears at most to the first power in the denominator of $p(x)$ and at most at second in $q(x)$, then the point is regular and vice versa. In this case, $x-x_0=x-0=x$. As it is seen, $x$ appears at second power in $p(x)$'s determinant and fifth at $q(x)$'s; hence point $x=0$ is an irregular singular point. 
+	\subsubsection{Obtaining the approximation of the solution}
+	To obtain the solution, I have used the Wolfram Mathematica suite. In it, the usual functions used to solve differential equations are DSolve for analytical solutions and NDSolve for numerical solutions. However, as the point of interest has been determined to be singular and irregular, I did not expect any of those functions to work, which turned out to be true, see \cref{fig4:wolfram_dsolve,fig5:wolfram_ndsolve}
+	
+	One other method of solving differential equations near singular points is an asymptotic approximation. It is an approximation near some point in the form of Taylor Polynomial, and, fortunately, that is just what is needed for the generating functions method. So, instead of expanding the resulting function, the expansion can be derived from the DE. To do so, I will use a Wolfram Language function called AsymptoticDSolveValue that does just that. Its inputs are the equation(s), the constraint(s), the name of the function variable, the name of the independent variable, the point of expansion, and the degree of the Taylor Polynomial. Then, using the CoefficientList function, the coefficients of the Taylor Polynomial will be extracted in a separate list. This list will be the list of first $n$ terms of Conference Numbers sequence. \Cref{fig6:wolfram_asympt_dsolve_value} demonstrates this approach
+	\subsection{Confirming the result by counting combinations with the use of brute-force computing}
+	I successfully obtained the first ten terms of the Conference Numbers; now, I need to verify the validity of the results. To do so, I have written a program in JavaScript that manually counts every possible arrangement of connections, provided the number of speakers and the maximum number of speakers in one call, \Parencite{mykhaylov_mmykhaylovtelephonenumbers_2020}. Then, it outputs each combination as well as the total count of combinations as a JSON file. \Cref{fig7:brute_force_json} demonstrates an example JSON output file of the program containing all possible combinations of calls between 4 customers and maximum three of them in one call.
+	
+	After running the program for numbers from 3 to 10 (the connection counts in 0-, 1- and 2-vertex graphs have been displayed in \cref{fig3:small_graph_connections_cycles}, so there is no need to check them), I have obtained the same sequence as I have from the Taylor Expansion, implying that there are no errors in the calculations. Therefore, the solution to the earlier derived differential equation indeed is the valid generating function to obtain the Conference Numbers sequence.
+	\section{Conclusion and evaluation}
+	During this investigation, I have broadened the concept of Telephone Numbers by introducing conference calls and have sought ways to both give an intuitive understanding of the new Conference Numbers, as well as obtain the terms of the sequence. Accordingly, I used graphs to represent the updated sequence and generating functions method to obtain a differential equation, which, when given an asymptotic solution at zero, produced the sought sequence. Furthermore, I have written a program to count the possible combinations by brute force, which has confirmed the infallibility of my calculations.
+	
+	Nevertheless, there is a way of how this research could have been done differently and potentially produce different, more elegant results. For instance, the Telephone Numbers also happen to have the generating function, but it is of another type than mine is. I have assumed the generating function to be of an ordinary kind, while the Telephone Numbers' generating function is exponential, see
+	\begin{equation}
+		\label{eq14:exp_generating_func_expr}
+		A(x)=\sum_{n\geq 0}a_n\frac{x^n}{n!}
+	\end{equation}
+	So, by considering the generating function a different type, I could have been able to arrive at a more elegant expression.
+	
+	There are many directions in which this research can be expanded. First of all, it is worthwhile to derive formulas for more generalised Conference Numbers, with 4-, 5- or -way connections. And while I think that the general recurrence formula can be easily derived (the transition from 2 to 3-way connections just added an extra term, and I expect this trend to continue), I do not expect any similar kinds of shortcuts when using generating functions method. Secondly, if the attempt to retrieve the generalised generating function will be unsuccessful, some patterns might arise in the generating functions themselves. This way, one would be able to derive a generating function for some variation of Conference Numbers sequence without actually going through the whole process of generating functions method.
+	\printbibliography
+	\appendix
+	\section{Graph Visualisations}
+	\begin{figure}[h!]
+		\centering
+		\caption{Example 4-vertex graph connections}
+		\fitfigure[width=1.0\textwidth]{Graph_Connections}
+		\figurenote{Vertices represent the customers in a cell network. Grey edge represents no active call, cyan edge represents an active call. The count of all possible connections in the graph with  vertices is the nth Telephone Number. Here, $T(4)=10$}
+		\label{fig1:graph_connections}
+	\end{figure}
+	\begin{figure}[h!]
+		\centering
+		\caption{Example 4-vertex graph connections with cycles}
+		\fitfigure[width=1.0\textwidth]{Graph_Connections_Cycles}
+		\figurenote{Vertices represent the customers in a cell network. Grey edge represents no active call, cyan edge represents an active call, and a cyan cycle represents a conference call. The count of all possible connections in the graph with $n$ vertices is the nth Conference Number}
+		\label{fig2:graph_connections_cycles}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\caption{Example 0-, 1- and 2-vertex graph connections with cycle}
+		\fitfigure[width=1.0\textwidth]{Small_Graph_Connections_Cycles}
+		\figurenote{This figure demonstrates all possible connections in the graphs with 0, 1 and 2 vertices. This gives $C(0)=1$, $C(1)=1$, $C(2)=2$}
+		\label{fig3:small_graph_connections_cycles}
+	\end{figure}
+	\section{Computations}
+	\begin{figure}[h!]
+		\centering
+		\caption{DSolve function in Wolfram Mathematica doesn't work}
+		\includegraphics[width=1.0\textwidth]{DSolve_Output}
+		\figurenote{This figure demonstrates the Wolfram Language code run in Wolfram Mathematica that should solve DE's analytically. However, it is unable to do so and just returns the code itself}
+		\label{fig4:wolfram_dsolve}
+	\end{figure}
+	\begin{figure}[h!]
+		\centering
+		\caption{NDSolve function in Wolfram Mathematica doesn't work}
+		\includegraphics[width=1.0\textwidth]{NDSolve_Output}
+		\figurenote{This figure demonstrates the Wolfram Language code run in Wolfram Mathematica that should solve DE's numerically. However, it is unable to do so as it encounters a singular point at 0 and just returns the code itself}
+		\label{fig5:wolfram_ndsolve}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\caption{AsymptoticDSolveValue gives a Taylor Polynomial approximation of the solution, CoefficientList extracts the coefficients. The retrieved coefficients are first 10 Conference Numbers}
+		\includegraphics[width=1.0\textwidth]{Asymptotic_DSolveValue_Output}
+		\figurenote{This figure demonstrates the Wolfram Language code run in Wolfram Mathematica that gives an asymptotic approximation of the solution of DE and extracts the coefficients. nmax determines the order of the Taylor Polynomial and consequently the count of retrieved Conference numbers}
+		\label{fig6:wolfram_asympt_dsolve_value}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\caption{JSON file with all possible connections between 4 customers and at most 3 customers in a call}
+		\includegraphics[width=1.0\textwidth]{Brute_Force_Json}
+		\figurenote{This figure demonstrates a JSON file which was the output of the program which counts every possible arrangement of 2- and 3-way connections between four people}
+		\label{fig7:brute_force_json}
+	\end{figure}
+\end{document}
